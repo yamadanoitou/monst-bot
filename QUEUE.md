@@ -53,13 +53,13 @@
 - branch: `research/ocr-libs`
 - notes: **結論: RapidOCR (onnx) 推奨**。CPU 150ms 前後、`pip install rapidocr_onnxruntime` のみ、メモリ ~150MB。Tesseract は軽量だが装飾フォントに弱く前処理必須、PaddleOCR は精度最高だが Windows で重い、EasyOCR は CPU で遅すぎる。詳細は research ファイル参照。#1 #2 (OCR 実装) はこれを受けて RapidOCR で進められる
 
-### #4 [P1] Ollama keep_alive 永続化 ⭐ Codex 次の推奨タスク
+### #4 [P1] Ollama keep_alive 永続化
 - owner: codex
-- status: open
-- accept: `monst_autonomous_agent.py` の Ollama 呼び出しで `keep_alive: "24h"` 相当を設定。モデルが Vram に常駐し、戦略ティックの初回レイテンシが2回目以降と同等になる
+- status: done
+- accept: ✅ `_call_local_llm()` payload に `keep_alive: "24h"` 配置確認・main へマージ済み
 - blocked_by: なし
-- branch: `feat/ollama-keep-alive`
-- notes: `body["keep_alive"] = "24h"` を `_call_local_llm()` へ。effect は別途計測。**#1 #2 が #3 待ちなので、Codex の独立着手先としてこれを優先する**
+- branch: `feat/ollama-keep-alive` （main にマージ済み 2026-06-02 23:20）
+- notes: 2026-06-02 23:20 main マージ完了。effect 計測（戦略ティック2回目以降のレイテンシ低下）は次のセッションで確認
 
 ### #5 [P1] 戦略ティック頻度設計
 - owner: claude
@@ -148,3 +148,4 @@
 ## DONE
 
 - #3 [P0] OCRライブラリ比較リサーチ — 2026-06-02 完了。`research/2026-06_ocr_jp_digits_benchmark.md`。**結論: RapidOCR (onnx) 採用**。#1 #2 のブロッカー解除済み
+- #4 [P1] Ollama keep_alive 永続化 — 2026-06-02 23:20 main へマージ。`_call_local_llm()` の payload に `keep_alive: "24h"` 配置。effect 計測は次回セッション

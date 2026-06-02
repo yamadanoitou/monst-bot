@@ -61,6 +61,7 @@ STRATEGY_LLM_MODEL = os.environ.get(
 )
 SUMMARY_LLM_MODEL = os.environ.get("MONST_SUMMARY_LLM_MODEL", "gpt-oss:20b")
 LLM_TIMEOUT = int(os.environ.get("MONST_LLM_TIMEOUT", os.environ.get("MONST_OLLAMA_TIMEOUT", "300")))
+OLLAMA_KEEP_ALIVE = os.environ.get("MONST_OLLAMA_KEEP_ALIVE", "24h")
 DEFAULT_REPEAT = int(os.environ.get("MONST_DIRECTIVE_REPEAT", "3"))
 MAX_DIRECTIVE_CYCLES = int(os.environ.get("MONST_DIRECTIVE_MAX_CYCLES", "50"))
 MAX_WAIT_SEC = int(os.environ.get("MONST_AUTONOMY_MAX_WAIT_SEC", str(bot.STAMINA_WAIT)))
@@ -401,6 +402,8 @@ def _call_local_llm(
             "messages": messages,
             "options": {"temperature": 0.2, "num_ctx": 8192, "num_predict": 1200},
         }
+        if OLLAMA_KEEP_ALIVE:
+            body["keep_alive"] = OLLAMA_KEEP_ALIVE
         if json_mode:
             body["format"] = "json"
         if think is not None:
@@ -1334,6 +1337,7 @@ LLM設定:
   MONST_LLM_URL=http://localhost:11434/api/chat
   MONST_STRATEGY_LLM_MODEL=qwen3.5:9b
   MONST_SUMMARY_LLM_MODEL=gpt-oss:20b
+  MONST_OLLAMA_KEEP_ALIVE=24h
 
 OpenAI互換サーバーの場合:
   MONST_LLM_PROVIDER=openai
