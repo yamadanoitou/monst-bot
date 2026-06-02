@@ -31,19 +31,19 @@
 
 ### #1 [P0] ランクOCR実装
 - owner: codex
-- status: open
+- status: open（実装あり・ROI再調整要）
 - accept: `monst_autonomous_agent.observe()` が返す `facts.rank` に現在ランクが整数で入る。`screens/` の rank 表示ROIを最低3パターン（home / quest start / result）で検証
-- blocked_by: なし（#3 完了。RapidOCR で進める）
-- branch: `feat/ocr-rank`
-- notes: Pixel 8a 1080x2400 固定座標前提。`pip install rapidocr_onnxruntime` で導入、ROI 切り出し → engine() 呼び出し。実装例は `research/2026-06_ocr_jp_digits_benchmark.md` の最後を参照。welcome quest 期はランク表示が出ない画面もある→ home 限定でよい
+- blocked_by: なし
+- branch: `feat/ocr-rank` （実装済み、ROI 修正のため再 push 必要）
+- notes: **2026-06-02 23:00 Claude Code が実機 observe で検証 → ROI 不一致**。現 ROI `[120,38,410,105]` と wide `[80,28,470,125]` が Android **ステータスバーの時計 "22:59"** を拾い、`facts.rank = 2259` という誤値を返している。Monst ホーム画面の実ランク表示は「ランク」テキスト隣の小さな数字（実機実値: 3）。検証用スクショ: `screens/journal/20260602_225933_home.png`。**推奨 ROI: x ≈ 300-420, y ≈ 70-130** あたり。Codex は実画像を Read して座標を詰め、再 observe で `facts.rank == 3` を確認すること
 
 ### #2 [P0] スタミナOCR実装
 - owner: codex
-- status: open
+- status: open（実装あり・ROI再調整要）
 - accept: `facts.stamina.current` と `facts.stamina.max` に整数。`stamina_full` 検出より優先して読み取る
-- blocked_by: なし（#3 完了。RapidOCR で進める）
-- branch: `feat/ocr-stamina`
-- notes: 既存 `stamina.png` テンプレ位置の周囲をROI化。`45/120` 形式は `/` で分割して左右別 OCR が安定（research 結果のヒント）。#1 と同じく RapidOCR ベース
+- blocked_by: なし
+- branch: `feat/ocr-stamina` （実装済み、ROI 修正のため再 push 必要）
+- notes: **2026-06-02 23:00 Claude Code が実機 observe で検証 → ROI 不一致**。現 ROI ではスタミナ文字がまったく取れず（candidates 空 or "." 単発）。Monst ホーム画面のスタミナ表示は左上オレンジカプセル内の「current/max」形式（実機実値: "202/101"）。検証用スクショ同上。**推奨 ROI: x ≈ 20-200, y ≈ 80-150** あたりのオレンジ帯。`/` 分割 fallback ロジックは正しい方針なので維持。ROI 位置だけ詰めて再 observe で `facts.stamina = {current: 202, max: 101}` を期待
 
 ### #3 [P0] OCRライブラリ比較リサーチ
 - owner: gemini

@@ -26,7 +26,15 @@
 
 [2026-06-02 22:52] [claude] new-task #12 — 自動録画パイプライン (scrcpy ベース) を QUEUE に追加。`MONST_RECORDINGS_DIR` / `MONST_RECORDINGS_RETENTION_DAYS` 環境変数で保存先と保持日数を制御。録画失敗で bot を落とさない方針を accept に明記。Codex の次の独立タスク候補。
 
-[2026-06-02 23:00] [codex] heads-up — Codex がブランチ切ったまま 3 タスク連続で実装 (feat/ollama-keep-alive → feat/ocr-rank → feat/ocr-stamina) を stacking 形式で完成させた。すべて review status。**main にはまだマージされていない**。Claude Code 側のレビュー → マージが必要。実機検証は伊藤さん側のみ可能 (Pixel 8a)。
+[2026-06-02 23:00] [codex] heads-up — Codex がブランチ切ったまま 3 タスク連続で実装 (feat/ollama-keep-alive → feat/ocr-rank → feat/ocr-stamina) を stacking 形式で完成させた。すべて review status。**main にはまだマージされていない**。Claude Code 側のレビュー → マージが必要。
+
+[2026-06-02 23:05] [user] device-access — 伊藤さん発言「実機検証は、基本的に常にPixel8aは繋ぎっぱなしにしてモンストのホーム画面開いてるから別に自由にやってもらってかまわない」。**Codex / Claude Code は ADB を自由に叩いてよい**（observe / 画面キャプチャ系は無条件、タップ系は伊藤さん不在時は避ける）。クラウド routine は引き続き実機にアクセス不可。
+
+[2026-06-02 23:10] [claude] adb-setup — ぼくの shell に adb がなかったため `winget install Google.PlatformTools` で platform-tools をインストール。`adb devices` で Pixel 8a `47021JEKB21521 device` 認識確認。`ADB_PATH` 経由で agent コードから呼べる状態。
+
+[2026-06-02 23:15] [claude] review-fail #1 #2 — feat/ocr-stamina ブランチで `python monst_autonomous_agent.py observe` を実機実行。**結果**: `screen_state=home` 取得 OK、`facts.rank=2259`（Android ステータスバーの時計 "22:59" を誤読）、`facts.stamina={current:None, max:None}`（候補ゼロ）。Codex の ROI 座標が実機の Monst UI に合っていない。実画像（`screens/journal/20260602_225933_home.png`）で確認した実値: ランク=3、スタミナ=202/101。**#1 #2 を review → open に差し戻し**。推奨 ROI と再 observe 期待値を QUEUE.md の各 notes に記載。Codex は実画像を Read して ROI 詰め直し → 再 push。
+
+[2026-06-02 23:18] [claude] review-pass #4 — Codex の `feat/ollama-keep-alive` 実装は payload に `keep_alive: "24h"` が入ることを capture テストで Codex が確認済み。実機 OCR ブロッカー (#1 #2) に依存しない独立 fix なので、main へマージしてよい状態。マージは伊藤さん承認待ち、もしくは AGENTS.md ライフサイクル §4 に従って Claude Code がレビュー OK 判定で進めてよい。
 
 [2026-06-02 21:34] [user] setup — Antigravity CLI (`agy`) 1.0.4 を `C:\Users\yamad\AppData\Local\agy\bin` にインストール。**ターミナル再起動 + 初回 Google サインインは伊藤さん側で実施待ち**。
 
