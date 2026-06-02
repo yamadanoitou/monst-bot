@@ -55,11 +55,11 @@
 
 ### #4 [P1] Ollama keep_alive 永続化 ⭐ Codex 次の推奨タスク
 - owner: codex
-- status: open
+- status: review
 - accept: `monst_autonomous_agent.py` の Ollama 呼び出しで `keep_alive: "24h"` 相当を設定。モデルが Vram に常駐し、戦略ティックの初回レイテンシが2回目以降と同等になる
 - blocked_by: なし
 - branch: `feat/ollama-keep-alive`
-- notes: `body["keep_alive"] = "24h"` を `_call_local_llm()` へ。effect は別途計測。**#1 #2 が #3 待ちなので、Codex の独立着手先としてこれを優先する**
+- notes: Codex が 2026-06-02 22:30 に実装完了。`MONST_OLLAMA_KEEP_ALIVE` 既定値 `24h` を Ollama payload に設定。effect は別途計測
 
 ### #5 [P1] 戦略ティック頻度設計
 - owner: claude

@@ -22,6 +22,10 @@
 
 [2026-06-02 22:32] [gemini] research-done #3 — Claude Code が `gemini -p` で OCR ライブラリ比較リサーチを実行・完了。`research/2026-06_ocr_jp_digits_benchmark.md` 保存。**結論: RapidOCR (onnxruntime) を採用**。CPU 150ms 前後、`pip install rapidocr_onnxruntime` のみで導入、メモリ ~150MB、装飾フォントにも強い。Tesseract は軽量だが前処理必須、PaddleOCR は Windows で重い、EasyOCR は CPU 推論が遅すぎる。**#1 #2 のブロッカー解除済み**。Codex は #4 を済ませてから #1 #2 に RapidOCR で着手する流れに更新。
 
+[2026-06-02 22:29] [codex] claim #4 — `feat/ollama-keep-alive` ブランチを作成し、Ollama keep_alive 永続化タスクを開始。完了後に RapidOCR ベースで #1 → #2 の OCR 実装へ進む。
+
+[2026-06-02 22:30] [codex] complete #4 — `_call_local_llm()` の Ollama payload に `keep_alive` を追加。既定値は `MONST_OLLAMA_KEEP_ALIVE=24h`。`python -m py_compile monst_autonomous_agent.py` と payload 捕捉テストで `keep_alive: "24h"` を確認。
+
 [2026-06-02 21:34] [user] setup — Antigravity CLI (`agy`) 1.0.4 を `C:\Users\yamad\AppData\Local\agy\bin` にインストール。**ターミナル再起動 + 初回 Google サインインは伊藤さん側で実施待ち**。
 
 [2026-06-02 21:30] [claude] review — `monst_autonomous_agent.py` が 606→1415 行に成長。新規追加：`screen_journal` 連携、LLM provider 抽象化（Ollama + OpenAI 互換）、`candidate_taps_from_observation`、`learn_step` / `propose_learning_tap`、`collect_teacher_demo`、`reactor_step` / `reactor_loop`、`runtime_policy.json`。設計書とのドリフト3点を指摘済み：(1) OCR が放置されたまま、(2) `replay_touch` 既存資産を使わず `DEMO_BATTLE_SHOTS` で別系統を立てた、(3) 座標ハードコードが welcome quest 用に膨らんだ。
