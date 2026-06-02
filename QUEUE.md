@@ -117,6 +117,14 @@
 - branch: `docs/policy-vs-journal`
 - notes: 真実源が分散しはじめている問題への対処
 
+### #13 [P0] wait_stamina の hard_rule 修正 ⭐ Codex 次の最優先
+- owner: codex
+- status: open
+- accept: `monst_autonomous_agent.build_strategy_prompt()` の `hard_rules` を更新し、wait_stamina の発動条件を厳密化。LLM が stamina.current >= max（オーバーキャップ）を wait_stamina の理由にしないこと。実機 `once startup` で farm_quest が選ばれることを再検証
+- blocked_by: なし
+- branch: `feat/wait-stamina-rule`
+- notes: 2026-06-02 23:22 の `once startup` 初回テストで qwen3.5:9b が `current=202, max=101` を「上限超過」と解釈して wait_stamina を選んだ（実際は豊富にあるからすぐ farm すべき場面）。提案 rule: (1) "wait_stamina は facts.stamina.current が次の行動コスト未満の時のみ選ぶ。welcome_quest は通常 5-10 スタミナ"、(2) "facts.stamina.current >= facts.stamina.max（オーバーキャップ）は豊富にある状態。wait_stamina ではなく farm_quest / attempt_clear を選ぶ"。日英両方で書くと qwen が拾いやすい
+
 ### #12 [P2] 自動録画パイプライン ⭐ Codex 次の独立タスク
 - owner: codex
 - status: open

@@ -50,6 +50,8 @@
 
 [2026-06-02 23:30] [claude] review-pass + merge #1 #2 — Codex の ROI 再調整 (d89b022) を独立 observe で検証。`facts.rank=3`（4 ROI 全部 score 1.00）、`facts.stamina={current:202, max:101}`。**実機検証パス**。`feat/ocr-stamina` を main へ no-ff マージ（stacked branch なので #1 の `feat/ocr-rank` も同時に取り込まれる）。QUEUE #1 #2 を DONE へ移動。**P0 三本（#1 #2 #3）すべて完了**。次の Codex の自然な claim は #12 自動録画 or #10 座標ハードコード巻き直し。
 
+[2026-06-02 23:22] [claude] e2e-first-run — `python monst_autonomous_agent.py once startup` を実機実行。**パイプライン自体は通過**: observe (rank=3, stamina={202,101}) → Ollama qwen3.5:9b 呼び出し → JSON 応答 → directive parse → execute → return。所要 ~100秒（うち 101秒は wait_stamina の sleep）。**ただし LLM の戦略判断にバグ**: `current=202 max=101` を「上限超過」と解釈して `wait_stamina` を選んだ（実際は豊富にあるからすぐ farm すべき）。reasoning は「スタミナが 101 の上限を超えているため wait_stamina」。原因は `hard_rules` の wait_stamina 発動条件が曖昧（"If stamina is out, choose wait_stamina" だけ）。**QUEUE #13 を新規 P0 で起票**してオーバーキャップ時の挙動を明文化させる。それまで autopilot は farm_quest を自力で選べないので寝かせる。
+
 [2026-06-02 23:08] [codex] reclaim #1 #2 — Claude Code の実機 review-fail を受け、`feat/ocr-stamina` に main を merge して ROI 再調整を開始。対象スクショは `screens/journal/20260602_225933_home.png`。
 
 [2026-06-02 23:12] [codex] complete #1 #2 retry — 実画像 `screens/journal/20260602_225933_home.png` と実機 observe でROI再調整。rank は中央ランク円、stamina は左上オレンジカプセルへ変更。`MONST_OCR_MAX_RANK=999` で時計誤読を拒否。`ADB_PATH=...platform-tools\adb.exe python monst_autonomous_agent.py observe` で `facts.rank=3` / `facts.stamina={current:202,max:101}` を確認。
