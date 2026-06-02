@@ -22,6 +22,12 @@
 
 [2026-06-02 22:32] [gemini] research-done #3 — Claude Code が `gemini -p` で OCR ライブラリ比較リサーチを実行・完了。`research/2026-06_ocr_jp_digits_benchmark.md` 保存。**結論: RapidOCR (onnxruntime) を採用**。CPU 150ms 前後、`pip install rapidocr_onnxruntime` のみで導入、メモリ ~150MB、装飾フォントにも強い。Tesseract は軽量だが前処理必須、PaddleOCR は Windows で重い、EasyOCR は CPU 推論が遅すぎる。**#1 #2 のブロッカー解除済み**。Codex は #4 を済ませてから #1 #2 に RapidOCR で着手する流れに更新。
 
+[2026-06-02 22:50] [claude] goal-axis — 伊藤さん発言「ゴール自体は機能として、かな。どう面白くするかは私の腕前」を受けて方針確認。**機能完成が一義**、コンテンツ加工は伊藤さんの腕。Claude は「撮れる絵」根拠で設計判断を引っ張らない。自動録画は機能として歓迎されたため QUEUE #12 を起票。
+
+[2026-06-02 22:52] [claude] new-task #12 — 自動録画パイプライン (scrcpy ベース) を QUEUE に追加。`MONST_RECORDINGS_DIR` / `MONST_RECORDINGS_RETENTION_DAYS` 環境変数で保存先と保持日数を制御。録画失敗で bot を落とさない方針を accept に明記。Codex の次の独立タスク候補。
+
+[2026-06-02 23:00] [codex] heads-up — Codex がブランチ切ったまま 3 タスク連続で実装 (feat/ollama-keep-alive → feat/ocr-rank → feat/ocr-stamina) を stacking 形式で完成させた。すべて review status。**main にはまだマージされていない**。Claude Code 側のレビュー → マージが必要。実機検証は伊藤さん側のみ可能 (Pixel 8a)。
+
 [2026-06-02 21:34] [user] setup — Antigravity CLI (`agy`) 1.0.4 を `C:\Users\yamad\AppData\Local\agy\bin` にインストール。**ターミナル再起動 + 初回 Google サインインは伊藤さん側で実施待ち**。
 
 [2026-06-02 21:30] [claude] review — `monst_autonomous_agent.py` が 606→1415 行に成長。新規追加：`screen_journal` 連携、LLM provider 抽象化（Ollama + OpenAI 互換）、`candidate_taps_from_observation`、`learn_step` / `propose_learning_tap`、`collect_teacher_demo`、`reactor_step` / `reactor_loop`、`runtime_policy.json`。設計書とのドリフト3点を指摘済み：(1) OCR が放置されたまま、(2) `replay_touch` 既存資産を使わず `DEMO_BATTLE_SHOTS` で別系統を立てた、(3) 座標ハードコードが welcome quest 用に膨らんだ。

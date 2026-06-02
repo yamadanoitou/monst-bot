@@ -117,6 +117,14 @@
 - branch: `docs/policy-vs-journal`
 - notes: 真実源が分散しはじめている問題への対処
 
+### #12 [P2] 自動録画パイプライン ⭐ Codex 次の独立タスク
+- owner: codex
+- status: open
+- accept: `monst_autonomous_agent.py` のセッション開始時に scrcpy をサブプロセスで起動し、Pixel 8a の画面を 1 時間ごとローテーションで mp4 録画する。出力先は環境変数 `MONST_RECORDINGS_DIR`（既定 `./recordings`）、保持日数は `MONST_RECORDINGS_RETENTION_DAYS`（既定 7 日）で指定。bot 停止時に scrcpy も停止する
+- blocked_by: なし
+- branch: `feat/auto-recording`
+- notes: scrcpy 前提（`scoop install scrcpy` などで導入。未インストール時は起動時に警告だけ出して bot 本体は継続）。`recordings/` は重いので `.gitignore` に追加。ファイル名は `YYYY-MM-DD/HH-MM.mp4`。**録画失敗で bot 本体を落とさないこと**（録画は付帯機能）
+
 ---
 
 ## IN_PROGRESS
