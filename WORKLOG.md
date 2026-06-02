@@ -56,6 +56,12 @@
 
 [2026-06-02 23:12] [codex] complete #1 #2 retry — 実画像 `screens/journal/20260602_225933_home.png` と実機 observe でROI再調整。rank は中央ランク円、stamina は左上オレンジカプセルへ変更。`MONST_OCR_MAX_RANK=999` で時計誤読を拒否。`ADB_PATH=...platform-tools\adb.exe python monst_autonomous_agent.py observe` で `facts.rank=3` / `facts.stamina={current:202,max:101}` を確認。
 
+[2026-06-02 23:35] [codex] complete #13 (work tree) — wait_stamina の hard_rules を日英併記で厳密化、over-cap / unknown 時の invalid wait_stamina を `farm_quest/welcome_quest` へ補正する `apply_strategy_hard_rules()` を追加。dry-run で最終 directive `farm_quest/welcome_quest` 確認。Codex 実行環境では `.git` ロック不可で commit 未実施→ Claude Code が `feat/wait-stamina-rule` (1e9e902) に commit。
+
+[2026-06-02 23:46] [claude] e2e-attempt #13 verify — `feat/wait-stamina-rule` ブランチで実機 `once startup` 実行。**#13 fix 動作確認**: directive=`farm_quest/welcome_quest` で execute 開始。**ただしタップ層で破綻**: sendevent backend は `/dev/input/event2: Permission denied`（root 要）、input backend は Monst の検出対策で弾かれて画面遷移せず、6分間フリック空振りで battle timeout。
+
+ESCALATE: 設計の前提矛盾。CLAUDE.md / HANDOVER.md は「root 不要」と明記してるが、bot のタップ既定 backend は sendevent で実機では root 必要。input backend は Monst が弾く（CLAUDE.md §重要 記載どおり）。**伊藤さんが過去 `monst_rank_bot.py run` をどう動かしていたか**（root 化済み / 別 adb 設定 / 未実行）を聞かないと先に進めない。代替案: (1) `adb root` で userdebug build か確認、(2) scrcpy 経由の input injection、(3) アクセシビリティ APK 自作。今夜の autopilot は不可。`feat/wait-stamina-rule` の #13 fix 自体はマージ可能（戦略層は正しく動くため）、ただしタップ問題解決まで autopilot 実行は無意味。
+
 [2026-06-02 21:34] [user] setup — Antigravity CLI (`agy`) 1.0.4 を `C:\Users\yamad\AppData\Local\agy\bin` にインストール。**ターミナル再起動 + 初回 Google サインインは伊藤さん側で実施待ち**。
 
 [2026-06-02 21:30] [claude] review — `monst_autonomous_agent.py` が 606→1415 行に成長。新規追加：`screen_journal` 連携、LLM provider 抽象化（Ollama + OpenAI 互換）、`candidate_taps_from_observation`、`learn_step` / `propose_learning_tap`、`collect_teacher_demo`、`reactor_step` / `reactor_loop`、`runtime_policy.json`。設計書とのドリフト3点を指摘済み：(1) OCR が放置されたまま、(2) `replay_touch` 既存資産を使わず `DEMO_BATTLE_SHOTS` で別系統を立てた、(3) 座標ハードコードが welcome quest 用に膨らんだ。
