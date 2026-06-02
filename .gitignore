@@ -1,0 +1,15 @@
+# 自動生成物 (.gitkeep だけ追跡)
+screens/*
+!screens/.gitkeep
+logs/*
+!logs/.gitkeep
+
+# テンプレ画像はゲーム画面そのものなのでコミットしない
+templates/*.png
+!templates/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
