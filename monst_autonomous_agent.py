@@ -111,6 +111,54 @@ DEFAULT_RANK_OCR_ROIS = [
     OcrRoi("default_header_rank", 120, 38, 410, 105),
     OcrRoi("default_wide_header_rank", 80, 28, 470, 125),
 ]
+STAMINA_FULL_OCR_ROIS: dict[str, list[OcrRoi]] = {
+    "home": [
+        OcrRoi("home_header_stamina_full", 360, 36, 770, 112),
+        OcrRoi("home_header_stamina_wide", 300, 28, 840, 128),
+    ],
+    "welcome_home": [
+        OcrRoi("welcome_home_header_stamina_full", 360, 36, 770, 112),
+        OcrRoi("welcome_home_header_stamina_wide", 300, 28, 840, 128),
+    ],
+    "deck": [
+        OcrRoi("deck_header_stamina_full", 360, 36, 770, 112),
+        OcrRoi("deck_header_stamina_wide", 300, 28, 840, 128),
+    ],
+    "welcome_deck_select": [
+        OcrRoi("welcome_deck_header_stamina_full", 360, 36, 770, 112),
+        OcrRoi("welcome_deck_header_stamina_wide", 300, 28, 840, 128),
+    ],
+    "stamina_out": [
+        OcrRoi("stamina_dialog_text", 190, 900, 890, 1280),
+        OcrRoi("stamina_dialog_wide", 120, 760, 960, 1420),
+    ],
+}
+DEFAULT_STAMINA_FULL_OCR_ROIS = [
+    OcrRoi("default_header_stamina_full", 360, 36, 770, 112),
+    OcrRoi("default_header_stamina_wide", 300, 28, 840, 128),
+]
+STAMINA_SPLIT_OCR_ROIS: dict[str, tuple[OcrRoi, OcrRoi]] = {
+    "home": (
+        OcrRoi("home_stamina_current", 430, 42, 565, 112),
+        OcrRoi("home_stamina_max", 570, 42, 720, 112),
+    ),
+    "welcome_home": (
+        OcrRoi("welcome_home_stamina_current", 430, 42, 565, 112),
+        OcrRoi("welcome_home_stamina_max", 570, 42, 720, 112),
+    ),
+    "deck": (
+        OcrRoi("deck_stamina_current", 430, 42, 565, 112),
+        OcrRoi("deck_stamina_max", 570, 42, 720, 112),
+    ),
+    "welcome_deck_select": (
+        OcrRoi("welcome_deck_stamina_current", 430, 42, 565, 112),
+        OcrRoi("welcome_deck_stamina_max", 570, 42, 720, 112),
+    ),
+}
+DEFAULT_STAMINA_SPLIT_OCR_ROIS = (
+    OcrRoi("default_stamina_current", 430, 42, 565, 112),
+    OcrRoi("default_stamina_max", 570, 42, 720, 112),
+)
 
 _OCR_ENGINE: Any | None = None
 _OCR_IMPORT_ERROR: str | None = None
@@ -271,6 +319,10 @@ def _digits_only(text: str) -> str:
     return "".join(re.findall(r"\d+", text))
 
 
+def _integer_groups(text: str) -> list[int]:
+    return [int(item) for item in re.findall(r"\d+", text)]
+
+
 def _scale_roi(roi: OcrRoi, image_shape: tuple[int, ...]) -> tuple[int, int, int, int]:
     height, width = image_shape[:2]
     base_w, base_h = BASE_SCREEN_SIZE
@@ -283,11 +335,20 @@ def _scale_roi(roi: OcrRoi, image_shape: tuple[int, ...]) -> tuple[int, int, int
     return x1, y1, x2, y2
 
 
-def _best_digit_ocr_for_rois(image_path: str | None, rois: list[OcrRoi]) -> dict[str, Any]:
+def _jsonable_elapsed(elapsed: Any) -> Any:
+    if elapsed is None or isinstance(elapsed, (str, int, float, bool)):
+        return elapsed
+    if isinstance(elapsed, (list, tuple)):
+        return [_jsonable_elapsed(item) for item in elapsed]
+    if isinstance(elapsed, dict):
+        return {str(k): _jsonable_elapsed(v) for k, v in elapsed.items()}
+    return str(elapsed)
+
+
+def _ocr_text_candidates_for_rois(image_path: str | None, rois: list[OcrRoi]) -> dict[str, Any]:
     detail: dict[str, Any] = {
         "engine": "rapidocr_onnxruntime",
         "image_path": image_path,
-        "value": None,
         "candidates": [],
         "status": "not_run",
     }
@@ -304,7 +365,6 @@ def _best_digit_ocr_for_rois(image_path: str | None, rois: list[OcrRoi]) -> dict
         detail["status"] = "image_read_failed"
         return detail
 
-    best: dict[str, Any] | None = None
     for roi in rois:
         x1, y1, x2, y2 = _scale_roi(roi, image.shape)
         if x2 <= x1 or y2 <= y1:
@@ -313,19 +373,28 @@ def _best_digit_ocr_for_rois(image_path: str | None, rois: list[OcrRoi]) -> dict
         result, elapsed = engine(crop)
         for item in result or []:
             text = str(item[1]) if len(item) > 1 else ""
-            digits = _digits_only(text)
             score = float(item[2]) if len(item) > 2 else 0.0
-            candidate = {
+            detail["candidates"].append({
                 "roi": roi.id,
                 "box": [x1, y1, x2, y2],
                 "text": text,
-                "digits": digits,
+                "digits": _digits_only(text),
                 "score": round(score, 4),
-                "elapsed": elapsed,
-            }
-            detail["candidates"].append(candidate)
-            if digits and (best is None or score > float(best["score"])):
-                best = candidate
+                "elapsed": _jsonable_elapsed(elapsed),
+            })
+    detail["status"] = "ok" if detail["candidates"] else "no_text"
+    return detail
+
+
+def _best_digit_ocr_for_rois(image_path: str | None, rois: list[OcrRoi]) -> dict[str, Any]:
+    detail = _ocr_text_candidates_for_rois(image_path, rois)
+    detail["value"] = None
+    if detail["status"] not in {"ok", "no_text"}:
+        return detail
+    best: dict[str, Any] | None = None
+    for candidate in detail["candidates"]:
+        if candidate["digits"] and (best is None or float(candidate["score"]) > float(best["score"])):
+            best = candidate
 
     if best is None:
         detail["status"] = "no_digits"
@@ -344,15 +413,97 @@ def _rank_rois_for_state(screen_state: str | None) -> list[OcrRoi]:
     return rois
 
 
+def _stamina_rois_for_state(screen_state: str | None) -> list[OcrRoi]:
+    rois = list(STAMINA_FULL_OCR_ROIS.get(screen_state or "", []))
+    for roi in DEFAULT_STAMINA_FULL_OCR_ROIS:
+        if roi not in rois:
+            rois.append(roi)
+    return rois
+
+
+def _stamina_split_rois_for_state(screen_state: str | None) -> tuple[OcrRoi, OcrRoi]:
+    return STAMINA_SPLIT_OCR_ROIS.get(screen_state or "", DEFAULT_STAMINA_SPLIT_OCR_ROIS)
+
+
+def _parse_stamina_from_text(text: str) -> tuple[int | None, int | None]:
+    groups = _integer_groups(text)
+    if len(groups) < 2:
+        return None, None
+    current, max_value = groups[0], groups[1]
+    if current > max_value and len(groups) > 2:
+        current, max_value = groups[-2], groups[-1]
+    if max_value <= 0 or current < 0:
+        return None, None
+    return current, max_value
+
+
+def _extract_stamina_from_candidates(detail: dict[str, Any]) -> tuple[int | None, int | None, dict[str, Any] | None]:
+    best: dict[str, Any] | None = None
+    best_pair: tuple[int, int] | None = None
+    for candidate in detail.get("candidates", []):
+        current, max_value = _parse_stamina_from_text(str(candidate.get("text", "")))
+        if current is None or max_value is None:
+            continue
+        if best is None or float(candidate.get("score", 0.0)) > float(best.get("score", 0.0)):
+            best = candidate
+            best_pair = (current, max_value)
+    if best is None or best_pair is None:
+        return None, None, None
+    return best_pair[0], best_pair[1], best
+
+
+def _extract_split_stamina(image_path: str | None, screen_state: str | None) -> dict[str, Any]:
+    current_roi, max_roi = _stamina_split_rois_for_state(screen_state)
+    current_detail = _best_digit_ocr_for_rois(image_path, [current_roi])
+    max_detail = _best_digit_ocr_for_rois(image_path, [max_roi])
+    current = current_detail.get("value")
+    max_value = max_detail.get("value")
+    status = "ok" if isinstance(current, int) and isinstance(max_value, int) else "incomplete"
+    if status == "ok" and (current < 0 or max_value <= 0 or current > max_value * 2):
+        status = "invalid_range"
+    return {
+        "status": status,
+        "current": current if status == "ok" else None,
+        "max": max_value if status == "ok" else None,
+        "current_detail": current_detail,
+        "max_detail": max_detail,
+    }
+
+
+def _stamina_ocr(image_path: str | None, screen_state: str | None) -> dict[str, Any]:
+    detail = _ocr_text_candidates_for_rois(image_path, _stamina_rois_for_state(screen_state))
+    detail["current"] = None
+    detail["max"] = None
+    current, max_value, best = _extract_stamina_from_candidates(detail)
+    if current is not None and max_value is not None:
+        detail["status"] = "ok"
+        detail["current"] = current
+        detail["max"] = max_value
+        detail["best"] = best
+        return detail
+
+    split = _extract_split_stamina(image_path, screen_state)
+    detail["split_fallback"] = split
+    if split["status"] == "ok":
+        detail["status"] = "ok"
+        detail["current"] = split["current"]
+        detail["max"] = split["max"]
+    elif detail["status"] == "ok":
+        detail["status"] = "no_stamina_pair"
+    return detail
+
+
 def extract_ocr_facts(observation: dict[str, Any], screen_state: str | None) -> dict[str, Any]:
     current = observation.get("current_screen", {})
     image_path = current.get("image_path")
     rank_detail = _best_digit_ocr_for_rois(image_path, _rank_rois_for_state(screen_state))
+    stamina_detail = _stamina_ocr(image_path, screen_state)
     return {
         "rank": rank_detail.get("value"),
-        "stamina": {"current": None, "max": None},
+        "stamina": {"current": stamina_detail.get("current"), "max": stamina_detail.get("max")},
         "details": {
             "rank": rank_detail,
+            "stamina": stamina_detail,
         },
     }
 

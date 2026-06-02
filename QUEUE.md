@@ -39,11 +39,11 @@
 
 ### #2 [P0] スタミナOCR実装
 - owner: codex
-- status: open
+- status: review
 - accept: `facts.stamina.current` と `facts.stamina.max` に整数。`stamina_full` 検出より優先して読み取る
 - blocked_by: なし（#3 完了。RapidOCR で進める）
 - branch: `feat/ocr-stamina`
-- notes: 既存 `stamina.png` テンプレ位置の周囲をROI化。`45/120` 形式は `/` で分割して左右別 OCR が安定（research 結果のヒント）。#1 と同じく RapidOCR ベース
+- notes: Codex が 2026-06-02 22:38 に実装完了。full ROI の `45/120` パース + current/max 左右分割 fallback を実装。dry-run と fake OCR で検証。実機スクショでのROI微調整は未実施
 
 ### #3 [P0] OCRライブラリ比較リサーチ
 - owner: gemini
