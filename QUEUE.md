@@ -33,25 +33,25 @@
 - owner: codex
 - status: open
 - accept: `monst_autonomous_agent.observe()` が返す `facts.rank` に現在ランクが整数で入る。`screens/` の rank 表示ROIを最低3パターン（home / quest start / result）で検証
-- blocked_by: #3
+- blocked_by: なし（#3 完了。RapidOCR で進める）
 - branch: `feat/ocr-rank`
-- notes: Pixel 8a 1080x2400 固定座標前提。ROI 切り出して数字認識。welcome quest 期はランク表示が出ない画面もある→ home 限定でよい
+- notes: Pixel 8a 1080x2400 固定座標前提。`pip install rapidocr_onnxruntime` で導入、ROI 切り出し → engine() 呼び出し。実装例は `research/2026-06_ocr_jp_digits_benchmark.md` の最後を参照。welcome quest 期はランク表示が出ない画面もある→ home 限定でよい
 
 ### #2 [P0] スタミナOCR実装
 - owner: codex
 - status: open
 - accept: `facts.stamina.current` と `facts.stamina.max` に整数。`stamina_full` 検出より優先して読み取る
-- blocked_by: #3
+- blocked_by: なし（#3 完了。RapidOCR で進める）
 - branch: `feat/ocr-stamina`
-- notes: 既存 `stamina.png` テンプレ位置の周囲をROI化
+- notes: 既存 `stamina.png` テンプレ位置の周囲をROI化。`45/120` 形式は `/` で分割して左右別 OCR が安定（research 結果のヒント）。#1 と同じく RapidOCR ベース
 
 ### #3 [P0] OCRライブラリ比較リサーチ
 - owner: gemini
-- status: in_progress
-- accept: `research/2026-06_ocr_jp_digits_benchmark.md` を作成。Tesseract / PaddleOCR / EasyOCR / RapidOCR で「Pixel 8a スクショから日本語数字3〜5桁を読む」精度・レイテンシ・Windows 環境セットアップ容易性を比較。推奨1本を結論として書く
+- status: done
+- accept: ✅ `research/2026-06_ocr_jp_digits_benchmark.md` 作成済み
 - blocked_by: なし
 - branch: `research/ocr-libs`
-- notes: 数字専用 OCR（digits-only モード）が使えるかも論点。Claude Code が `gemini -p` で 2026-06-02 実行中
+- notes: **結論: RapidOCR (onnx) 推奨**。CPU 150ms 前後、`pip install rapidocr_onnxruntime` のみ、メモリ ~150MB。Tesseract は軽量だが装飾フォントに弱く前処理必須、PaddleOCR は精度最高だが Windows で重い、EasyOCR は CPU で遅すぎる。詳細は research ファイル参照。#1 #2 (OCR 実装) はこれを受けて RapidOCR で進められる
 
 ### #4 [P1] Ollama keep_alive 永続化 ⭐ Codex 次の推奨タスク
 - owner: codex
@@ -139,4 +139,4 @@
 
 ## DONE
 
-(なし)
+- #3 [P0] OCRライブラリ比較リサーチ — 2026-06-02 完了。`research/2026-06_ocr_jp_digits_benchmark.md`。**結論: RapidOCR (onnx) 採用**。#1 #2 のブロッカー解除済み
