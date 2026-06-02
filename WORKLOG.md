@@ -14,6 +14,12 @@
 
 [2026-06-02 21:50] [claude] compress — ドキュメント圧縮。`monst_autonomous_agent_design.md` と `HANDOVER.md` を `docs/archive/` へ退避。AGENTS.md §9「設計上の決定（不可侵）」を新設して、活用マップとバトル3段階を吸収。CLAUDE.md の参照も更新。ドキュメントは 4ファイル（CLAUDE / AGENTS / QUEUE / WORKLOG）に圧縮完了。
 
+[2026-06-02 22:05] [claude] split — monst-bot を company-me から分離して https://github.com/yamadanoitou/monst-bot (public) に独立化。ローカル本体は `c:/Users/yamad/monst-bot/`。日次 routine (`trig_01QvJR6v7uRbUyRZDMR8F18e`, Sonnet 4.6, 22:00 JST, Gmail) も新 repo を参照。
+
+[2026-06-02 22:20] [claude] contract-fix — agy `-p` の Windows stdout バグ ([gemini-cli issue #27466](https://github.com/google-gemini/gemini-cli/issues/27466)) を踏まえて contract を改訂。AGENTS.md §2 / §3 / §5 / 改訂履歴 を更新し、headless リサーチは `gemini -p`（Claude Code が Bash で直接実行）、対話用は `agy`（伊藤さんが手動）に役割分担。QUEUE.md の `owner: agy` を `owner: gemini` に統一。2026-06-18 の Antigravity 2.0 統合時に再評価。
+
+[2026-06-02 22:25] [claude] codex-assignment — Codex の次の claim 候補を QUEUE #4 (Ollama keep_alive) に指名。**理由**: P0 OCR (#1 #2) は #3 (OCR ライブラリ比較) 完了待ちでブロック中。#4 は依存なしの P1 独立タスクで、#3 の結果を待つ間に進められる。**Codex への引き継ぎ**: 作業ディレクトリは `c:/Users/yamad/monst-bot/`（company-me/projects/monst-bot/ は廃止）。ブランチは `feat/ollama-keep-alive`。受け入れ条件は QUEUE #4 の accept 参照。完了後 #3 の結果を見て #1 / #2 へ進む。
+
 [2026-06-02 21:34] [user] setup — Antigravity CLI (`agy`) 1.0.4 を `C:\Users\yamad\AppData\Local\agy\bin` にインストール。**ターミナル再起動 + 初回 Google サインインは伊藤さん側で実施待ち**。
 
 [2026-06-02 21:30] [claude] review — `monst_autonomous_agent.py` が 606→1415 行に成長。新規追加：`screen_journal` 連携、LLM provider 抽象化（Ollama + OpenAI 互換）、`candidate_taps_from_observation`、`learn_step` / `propose_learning_tap`、`collect_teacher_demo`、`reactor_step` / `reactor_loop`、`runtime_policy.json`。設計書とのドリフト3点を指摘済み：(1) OCR が放置されたまま、(2) `replay_touch` 既存資産を使わず `DEMO_BATTLE_SHOTS` で別系統を立てた、(3) 座標ハードコードが welcome quest 用に膨らんだ。

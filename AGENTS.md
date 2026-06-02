@@ -1,6 +1,6 @@
 # AGENTS.md — 3エージェント自律運用契約
 
-> このファイルは Codex / Claude Code / Antigravity CLI (agy) の3者で**共有する固定ルール**。
+> このファイルは Codex / Claude Code / Gemini系CLI (gemini headless + agy interactive) の3者で**共有する固定ルール**。
 > 各エージェントはセッション開始時にこのファイルと `QUEUE.md` を読む。`WORKLOG.md` には追記する。
 >
 > **このプロジェクトの第一目的は伊藤さんの関与最小化**。判断を仰ぐ前に契約を読み直すこと。
@@ -24,8 +24,8 @@
 | エージェント | 主担当 | やってよい | やってはいけない |
 |---|---|---|---|
 | **Codex** | 実装・テスト・実機キャリブレ | コード書く・PR出す・テンプレ採取 | 設計書改訂 / `AGENTS.md` 改訂 / main 直 push / 公開リポジトリへのテンプレ画像コミット |
-| **Claude Code** | 設計監督・差分レビュー・状態整理 | 各エージェントの成果レビュー / `WORKLOG.md` 日次サマリ / 設計書改訂提案 / 伊藤さんへの3行報告 | 実機ありきの実装をリードしない（Codex に振る）/ AGENTS.md を独断改訂しない |
-| **agy** | 外部知識調査・長文要約・並列大量読み込み | `strategy/research_raw/` への成果書き出し / 長文 daily summary 強化 | コード commit / monst-bot ディレクトリ配下のソース改変 |
+| **Claude Code** | 設計監督・差分レビュー・状態整理・Gemini 呼び出し | 各エージェントの成果レビュー / `WORKLOG.md` 日次サマリ / `gemini -p` で headless リサーチを実行 / 設計書改訂提案 / 伊藤さんへの3行報告 | 実機ありきの実装をリードしない（Codex に振る）/ AGENTS.md を独断改訂しない |
+| **Gemini (gemini headless / agy interactive)** | 外部知識調査・長文要約・並列大量読み込み | `gemini -p "..."` で Claude Code が headless 呼び出し → 結果を `research/` へ保存 / 複雑な指示やサブエージェント並列が必要な時は伊藤さんが `agy` を対話実行 | コード commit / monst-bot ディレクトリ配下のソース改変 |
 
 3者ともゲーム規約違反路線（root化 / メモリ改変 / 課金アイテム自動消費）には絶対乗らない。
 
@@ -36,8 +36,8 @@
 | 担当 | prefix | 例 |
 |---|---|---|
 | Codex | `feat/` `fix/` `refactor/` | `feat/ocr-rank`, `fix/welcome-info-dialog` |
-| Claude Code | `chore/` `docs/` `review/` | `chore/agents-md-init`, `review/0608` |
-| agy | コードを書かないので branch 不要 | — |
+| Claude Code | `chore/` `docs/` `review/` `research/` | `chore/agents-md-init`, `research/ocr-libs` |
+| Gemini (gemini/agy) | コードを書かないので branch 不要 | 結果は Claude Code が `research/` 配下に commit |
 
 ルール:
 - main 直 push 禁止。必ず PR
@@ -69,8 +69,11 @@ claim ルール:
 | エージェント | 起動条件 | 終了条件 |
 |---|---|---|
 | Codex | 伊藤さんの常駐セッション中、QUEUE から claim できる時 | テスト失敗3回連続 / 設計判断必要 / QUEUE 空 |
-| Claude Code | 伊藤さんが呼んだ時 + `/schedule` の日次ルーティン（合意後に設定） | レビュー完了 / 設計改訂必要時は伊藤さんへ |
-| agy | QUEUE に `owner: agy` のタスクが入った時。Claude Code が `agy -p "..."` で叩く or 伊藤さん手動 | リサーチ成果を `strategy/research_raw/<日付>_<topic>.md` に保存して終了 |
+| Claude Code | 伊藤さんが呼んだ時 + `/schedule` の日次ルーティン（22:00 JST 起動・Sonnet 4.6） | レビュー完了 / 設計改訂必要時は伊藤さんへ |
+| Gemini headless (`gemini`) | QUEUE に `owner: gemini` のタスクが入った時。Claude Code が直接 `gemini -p "..."` を Bash で叩いて結果を回収 | リサーチ成果を `research/<日付>_<topic>.md` に保存して終了 |
+| Antigravity 対話 (`agy`) | 複雑な指示・サブエージェント並列・対話デバッグが必要な時。伊藤さんが手動で対話実行 | 任意のタイミングで終了。重要な発見は `research/` または `WORKLOG.md` に手動転記 |
+
+**Windows 注意**: `agy -p`（headless）は [gemini-cli issue #27466](https://github.com/google-gemini/gemini-cli/issues/27466) の Windows stdout バグの影響を受けるため、自動化用途は `gemini -p` に統一する。2026-06-18 の Antigravity 2.0 統合時に再評価。
 
 ## 6. エスカレーション（伊藤さんに上げる条件）
 
@@ -161,3 +164,4 @@ claim ルール:
 
 - v1.0 / 2026-06-02 / 初版（Claude Code 起草、伊藤さん承認待ち）
 - v1.1 / 2026-06-02 / §9 設計上の決定を追加。`monst_autonomous_agent_design.md` と `HANDOVER.md` を `docs/archive/` へ退避し、不可侵原則だけ吸収
+- v1.2 / 2026-06-02 / agy の Windows stdout バグを踏まえ、headless 役を `gemini -p` に統一。`agy` は対話用に残す。Codex 連携の流れも明示

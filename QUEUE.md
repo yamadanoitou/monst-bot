@@ -6,13 +6,18 @@
 形式:
 ```
 ### #<番号> [P0|P1|P2|P3] <タイトル>
-- owner: codex | claude | agy
+- owner: codex | claude | gemini
 - status: open | in_progress | review | blocked | done
 - accept: <受け入れ条件>
 - blocked_by: <他タスク番号> または なし
 - branch: <ブランチ名 or ->
 - notes: <任意の補足>
 ```
+
+**owner の意味:**
+- `codex`: Codex CLI が実装。ローカルで PR まで持っていく
+- `claude`: Claude Code が設計・レビュー・状態整理
+- `gemini`: Claude Code が `gemini -p` で headless 実行して結果を `research/` に保存。複雑な対話が必要なときだけ伊藤さんが `agy` 対話モードに切り替える
 
 優先度の意味:
 - **P0**: これがないと撮りたい絵が成立しない（OCR・LLM事実根拠化）
@@ -41,20 +46,20 @@
 - notes: 既存 `stamina.png` テンプレ位置の周囲をROI化
 
 ### #3 [P0] OCRライブラリ比較リサーチ
-- owner: agy
-- status: open
-- accept: `strategy/research_raw/2026-06_ocr_jp_digits_benchmark.md` を作成。Tesseract / PaddleOCR / EasyOCR / RapidOCR で「Pixel 8a スクショから日本語数字3〜5桁を読む」精度・レイテンシ・Windows 環境セットアップ容易性を比較。推奨1本を結論として書く
+- owner: gemini
+- status: in_progress
+- accept: `research/2026-06_ocr_jp_digits_benchmark.md` を作成。Tesseract / PaddleOCR / EasyOCR / RapidOCR で「Pixel 8a スクショから日本語数字3〜5桁を読む」精度・レイテンシ・Windows 環境セットアップ容易性を比較。推奨1本を結論として書く
 - blocked_by: なし
-- branch: -
-- notes: 数字専用 OCR（digits-only モード）が使えるかも論点。`agy -p "Tesseract vs PaddleOCR vs EasyOCR vs RapidOCR for Japanese digit OCR on Pixel 8a screenshots, Windows 11, Python integration..."`
+- branch: `research/ocr-libs`
+- notes: 数字専用 OCR（digits-only モード）が使えるかも論点。Claude Code が `gemini -p` で 2026-06-02 実行中
 
-### #4 [P1] Ollama keep_alive 永続化
+### #4 [P1] Ollama keep_alive 永続化 ⭐ Codex 次の推奨タスク
 - owner: codex
 - status: open
 - accept: `monst_autonomous_agent.py` の Ollama 呼び出しで `keep_alive: "24h"` 相当を設定。モデルが Vram に常駐し、戦略ティックの初回レイテンシが2回目以降と同等になる
 - blocked_by: なし
 - branch: `feat/ollama-keep-alive`
-- notes: `body["keep_alive"] = "24h"` を `_call_local_llm()` へ。effect は別途計測
+- notes: `body["keep_alive"] = "24h"` を `_call_local_llm()` へ。effect は別途計測。**#1 #2 が #3 待ちなので、Codex の独立着手先としてこれを優先する**
 
 ### #5 [P1] 戦略ティック頻度設計
 - owner: claude
@@ -81,19 +86,19 @@
 - notes: 既存 `monst_rank_bot.record_touch` / `replay_touch` を使う前提。welcome quest 完了後の最初の壁で初発動する想定
 
 ### #8 [P2] 運極ターゲット候補リサーチ
-- owner: agy
+- owner: gemini
 - status: open
-- accept: `strategy/research_raw/2026-06_ungoku_starter_targets.md`。新規アカ・無課金・3〜6ヶ月運用前提で、初運極にすべき降臨キャラの候補3〜5体。各候補について「ドロップ元クエストの周回難易度」「現環境での有用性」「捨て垢でも作りやすいか」を列挙
+- accept: `research/2026-06_ungoku_starter_targets.md`。新規アカ・無課金・3〜6ヶ月運用前提で、初運極にすべき降臨キャラの候補3〜5体。各候補について「ドロップ元クエストの周回難易度」「現環境での有用性」「捨て垢でも作りやすいか」を列挙
 - blocked_by: なし
-- branch: -
-- notes: agy はモンスト Wiki / 攻略サイト / Reddit を漁る前提
+- branch: `research/ungoku-targets`
+- notes: モンスト Wiki / 攻略サイト / Reddit を漁る前提
 
 ### #9 [P2] ノマクエ「壁」判定基準リサーチ
-- owner: agy
+- owner: gemini
 - status: open
-- accept: `strategy/research_raw/2026-06_noma_wall_criteria.md`。ノマクエの章別難易度・推奨ランクの公式/非公式情報を整理。「何連敗で諦めて強化に回るか」の基準値を提案（連敗数・XP/スタミナ効率しきい値など）
+- accept: `research/2026-06_noma_wall_criteria.md`。ノマクエの章別難易度・推奨ランクの公式/非公式情報を整理。「何連敗で諦めて強化に回るか」の基準値を提案（連敗数・XP/スタミナ効率しきい値など）
 - blocked_by: なし
-- branch: -
+- branch: `research/noma-wall`
 - notes: 設計書 §12 オープンクエスチョンの一つ
 
 ### #10 [P3] 座標ハードコードのテンプレ巻き直し
