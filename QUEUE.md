@@ -31,11 +31,11 @@
 
 ### #1 [P0] ランクOCR実装
 - owner: codex
-- status: open
+- status: review
 - accept: `monst_autonomous_agent.observe()` が返す `facts.rank` に現在ランクが整数で入る。`screens/` の rank 表示ROIを最低3パターン（home / quest start / result）で検証
 - blocked_by: なし（#3 完了。RapidOCR で進める）
 - branch: `feat/ocr-rank`
-- notes: Pixel 8a 1080x2400 固定座標前提。`pip install rapidocr_onnxruntime` で導入、ROI 切り出し → engine() 呼び出し。実装例は `research/2026-06_ocr_jp_digits_benchmark.md` の最後を参照。welcome quest 期はランク表示が出ない画面もある→ home 限定でよい
+- notes: Codex が 2026-06-02 22:35 に実装完了。RapidOCR は `rapidocr-onnxruntime` として導入。home / deck(quest start相当) / result / rank_up のROI候補を実装し、dry-run と fake OCR で検証。実機スクショ3パターン検証は未実施
 
 ### #2 [P0] スタミナOCR実装
 - owner: codex

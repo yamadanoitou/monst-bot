@@ -26,6 +26,10 @@
 
 [2026-06-02 22:30] [codex] complete #4 — `_call_local_llm()` の Ollama payload に `keep_alive` を追加。既定値は `MONST_OLLAMA_KEEP_ALIVE=24h`。`python -m py_compile monst_autonomous_agent.py` と payload 捕捉テストで `keep_alive: "24h"` を確認。
 
+[2026-06-02 22:31] [codex] claim #1 — `feat/ocr-rank` ブランチを作成し、RapidOCR ベースの rank OCR 実装を開始。research の Implementation hint を参照済み。
+
+[2026-06-02 22:35] [codex] complete #1-impl — `observe()` に RapidOCR rank 抽出を追加。`facts.rank` と `facts.ocr.rank` に値/ROI/raw text/score/status を保存。`requirements.txt` に `rapidocr-onnxruntime>=1.4.4` を追加。`python -m py_compile monst_autonomous_agent.py`、`observe --dry-run`、fake OCR helper test は通過。実機スクショ3パターン検証は未実施。
+
 [2026-06-02 21:34] [user] setup — Antigravity CLI (`agy`) 1.0.4 を `C:\Users\yamad\AppData\Local\agy\bin` にインストール。**ターミナル再起動 + 初回 Google サインインは伊藤さん側で実施待ち**。
 
 [2026-06-02 21:30] [claude] review — `monst_autonomous_agent.py` が 606→1415 行に成長。新規追加：`screen_journal` 連携、LLM provider 抽象化（Ollama + OpenAI 互換）、`candidate_taps_from_observation`、`learn_step` / `propose_learning_tap`、`collect_teacher_demo`、`reactor_step` / `reactor_loop`、`runtime_policy.json`。設計書とのドリフト3点を指摘済み：(1) OCR が放置されたまま、(2) `replay_touch` 既存資産を使わず `DEMO_BATTLE_SHOTS` で別系統を立てた、(3) 座標ハードコードが welcome quest 用に膨らんだ。
