@@ -26,6 +26,14 @@
 
 [2026-06-02 22:30] [codex] complete #4 — `_call_local_llm()` の Ollama payload に `keep_alive` を追加。既定値は `MONST_OLLAMA_KEEP_ALIVE=24h`。`python -m py_compile monst_autonomous_agent.py` と payload 捕捉テストで `keep_alive: "24h"` を確認。
 
+[2026-06-02 22:31] [codex] claim #1 — `feat/ocr-rank` ブランチを作成し、RapidOCR ベースの rank OCR 実装を開始。research の Implementation hint を参照済み。
+
+[2026-06-02 22:35] [codex] complete #1-impl — `observe()` に RapidOCR rank 抽出を追加。`facts.rank` と `facts.ocr.rank` に値/ROI/raw text/score/status を保存。`requirements.txt` に `rapidocr-onnxruntime>=1.4.4` を追加。`python -m py_compile monst_autonomous_agent.py`、`observe --dry-run`、fake OCR helper test は通過。実機スクショ3パターン検証は未実施。
+
+[2026-06-02 22:36] [codex] claim #2 — `feat/ocr-stamina` ブランチを作成し、RapidOCR ベースの stamina current/max OCR 実装を開始。
+
+[2026-06-02 22:38] [codex] complete #2-impl — `observe()` に RapidOCR stamina 抽出を追加。`facts.stamina.current/max` と `facts.ocr.stamina` に値/ROI/raw text/score/status を保存。full ROI の `45/120` パースと左右分割 fallback を実装。`python -m py_compile monst_autonomous_agent.py`、`observe --dry-run`、fake OCR helper test は通過。実機ROI微調整は未実施。
+
 [2026-06-02 22:50] [claude] goal-axis — 伊藤さん発言「ゴール自体は機能として、かな。どう面白くするかは私の腕前」を受けて方針確認。**機能完成が一義**、コンテンツ加工は伊藤さんの腕。Claude は「撮れる絵」根拠で設計判断を引っ張らない。自動録画は機能として歓迎されたため QUEUE #12 を起票。
 
 [2026-06-02 22:52] [claude] new-task #12 — 自動録画パイプライン (scrcpy ベース) を QUEUE に追加。`MONST_RECORDINGS_DIR` / `MONST_RECORDINGS_RETENTION_DAYS` 環境変数で保存先と保持日数を制御。録画失敗で bot を落とさない方針を accept に明記。Codex の次の独立タスク候補。
@@ -39,6 +47,10 @@
 [2026-06-02 23:15] [claude] review-fail #1 #2 — feat/ocr-stamina ブランチで `python monst_autonomous_agent.py observe` を実機実行。**結果**: `screen_state=home` 取得 OK、`facts.rank=2259`（Android ステータスバーの時計 "22:59" を誤読）、`facts.stamina={current:None, max:None}`（候補ゼロ）。Codex の ROI 座標が実機の Monst UI に合っていない。実画像（`screens/journal/20260602_225933_home.png`）で確認した実値: ランク=3、スタミナ=202/101。**#1 #2 を review → open に差し戻し**。推奨 ROI と再 observe 期待値を QUEUE.md の各 notes に記載。Codex は実画像を Read して ROI 詰め直し → 再 push。
 
 [2026-06-02 23:20] [claude] merge-pass #4 — `feat/ollama-keep-alive` を main へ no-ff マージ。AGENTS.md §3「差分100行未満・テスト緑なら省略可」適用。QUEUE #4 を DONE へ移動。
+
+[2026-06-02 23:08] [codex] reclaim #1 #2 — Claude Code の実機 review-fail を受け、`feat/ocr-stamina` に main を merge して ROI 再調整を開始。対象スクショは `screens/journal/20260602_225933_home.png`。
+
+[2026-06-02 23:12] [codex] complete #1 #2 retry — 実画像 `screens/journal/20260602_225933_home.png` と実機 observe でROI再調整。rank は中央ランク円、stamina は左上オレンジカプセルへ変更。`MONST_OCR_MAX_RANK=999` で時計誤読を拒否。`ADB_PATH=...platform-tools\adb.exe python monst_autonomous_agent.py observe` で `facts.rank=3` / `facts.stamina={current:202,max:101}` を確認。
 
 [2026-06-02 21:34] [user] setup — Antigravity CLI (`agy`) 1.0.4 を `C:\Users\yamad\AppData\Local\agy\bin` にインストール。**ターミナル再起動 + 初回 Google サインインは伊藤さん側で実施待ち**。
 

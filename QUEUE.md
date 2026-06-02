@@ -31,19 +31,19 @@
 
 ### #1 [P0] ランクOCR実装
 - owner: codex
-- status: open（実装あり・ROI再調整要）
+- status: review
 - accept: `monst_autonomous_agent.observe()` が返す `facts.rank` に現在ランクが整数で入る。`screens/` の rank 表示ROIを最低3パターン（home / quest start / result）で検証
 - blocked_by: なし
 - branch: `feat/ocr-rank` （実装済み、ROI 修正のため再 push 必要）
-- notes: **2026-06-02 23:00 Claude Code が実機 observe で検証 → ROI 不一致**。現 ROI `[120,38,410,105]` と wide `[80,28,470,125]` が Android **ステータスバーの時計 "22:59"** を拾い、`facts.rank = 2259` という誤値を返している。Monst ホーム画面の実ランク表示は「ランク」テキスト隣の小さな数字（実機実値: 3）。検証用スクショ: `screens/journal/20260602_225933_home.png`。**推奨 ROI: x ≈ 300-420, y ≈ 70-130** あたり。Codex は実画像を Read して座標を詰め、再 observe で `facts.rank == 3` を確認すること
+- notes: Codex が 2026-06-02 23:12 にROI再調整完了。Android ステータスバー時計を避け、home rank は中央ランク円 `x=430-630,y=155-320` / 数字 `x=500-575,y=235-285` を読む。`MONST_OCR_MAX_RANK=999` で時計などの大きすぎる誤値を拒否。実機 observe で `facts.rank == 3` を確認。手元素材は home のみで、quest start / result の追加実画像検証は未実施
 
 ### #2 [P0] スタミナOCR実装
 - owner: codex
-- status: open（実装あり・ROI再調整要）
+- status: review
 - accept: `facts.stamina.current` と `facts.stamina.max` に整数。`stamina_full` 検出より優先して読み取る
 - blocked_by: なし
 - branch: `feat/ocr-stamina` （実装済み、ROI 修正のため再 push 必要）
-- notes: **2026-06-02 23:00 Claude Code が実機 observe で検証 → ROI 不一致**。現 ROI ではスタミナ文字がまったく取れず（candidates 空 or "." 単発）。Monst ホーム画面のスタミナ表示は左上オレンジカプセル内の「current/max」形式（実機実値: "202/101"）。検証用スクショ同上。**推奨 ROI: x ≈ 20-200, y ≈ 80-150** あたりのオレンジ帯。`/` 分割 fallback ロジックは正しい方針なので維持。ROI 位置だけ詰めて再 observe で `facts.stamina = {current: 202, max: 101}` を期待
+- notes: Codex が 2026-06-02 23:12 にROI再調整完了。home stamina は左上オレンジカプセル `x=80-400,y=160-265` / tight `x=120-370,y=180-245` を読む。実機 observe で `facts.stamina = {current: 202, max: 101}` を確認。split fallback も左上カプセルに合わせて更新。手元素材は home のみで、stamina_out 実画像検証は未実施
 
 ### #3 [P0] OCRライブラリ比較リサーチ
 - owner: gemini
