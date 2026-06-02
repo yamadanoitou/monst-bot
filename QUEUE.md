@@ -31,19 +31,19 @@
 
 ### #1 [P0] ランクOCR実装
 - owner: codex
-- status: review
-- accept: `monst_autonomous_agent.observe()` が返す `facts.rank` に現在ランクが整数で入る。`screens/` の rank 表示ROIを最低3パターン（home / quest start / result）で検証
+- status: done
+- accept: ✅ `facts.rank == 3` を Claude Code が独立 observe で確認 (score 1.00 across 4 ROI candidates)
 - blocked_by: なし
-- branch: `feat/ocr-rank` （実装済み、ROI 修正のため再 push 必要）
-- notes: Codex が 2026-06-02 23:12 にROI再調整完了。Android ステータスバー時計を避け、home rank は中央ランク円 `x=430-630,y=155-320` / 数字 `x=500-575,y=235-285` を読む。`MONST_OCR_MAX_RANK=999` で時計などの大きすぎる誤値を拒否。実機 observe で `facts.rank == 3` を確認。手元素材は home のみで、quest start / result の追加実画像検証は未実施
+- branch: `feat/ocr-rank` → `feat/ocr-stamina` 経由で main にマージ済み 2026-06-02 23:30
+- notes: ROI 再調整完了。home rank は中央ランク円 `x=430-630,y=155-320` / 数字 `x=500-575,y=235-285`。`MONST_OCR_MAX_RANK=999` で時計誤読を拒否。home 以外の画面（quest start / result）の検証は次回 observe 時に拡張
 
 ### #2 [P0] スタミナOCR実装
 - owner: codex
-- status: review
-- accept: `facts.stamina.current` と `facts.stamina.max` に整数。`stamina_full` 検出より優先して読み取る
+- status: done
+- accept: ✅ `facts.stamina = {current: 202, max: 101}` を Claude Code が独立 observe で確認
 - blocked_by: なし
-- branch: `feat/ocr-stamina` （実装済み、ROI 修正のため再 push 必要）
-- notes: Codex が 2026-06-02 23:12 にROI再調整完了。home stamina は左上オレンジカプセル `x=80-400,y=160-265` / tight `x=120-370,y=180-245` を読む。実機 observe で `facts.stamina = {current: 202, max: 101}` を確認。split fallback も左上カプセルに合わせて更新。手元素材は home のみで、stamina_out 実画像検証は未実施
+- branch: `feat/ocr-stamina` → main にマージ済み 2026-06-02 23:30
+- notes: ROI 再調整完了。home stamina は左上オレンジカプセル `x=80-400,y=160-265` / tight `x=120-370,y=180-245`。`/` 分割 fallback も左上カプセルに合わせて更新。stamina_out 実画像検証は実機がその状態に入った時に観測
 
 ### #3 [P0] OCRライブラリ比較リサーチ
 - owner: gemini
@@ -149,3 +149,5 @@
 
 - #3 [P0] OCRライブラリ比較リサーチ — 2026-06-02 完了。`research/2026-06_ocr_jp_digits_benchmark.md`。**結論: RapidOCR (onnx) 採用**。#1 #2 のブロッカー解除済み
 - #4 [P1] Ollama keep_alive 永続化 — 2026-06-02 23:20 main へマージ。`_call_local_llm()` の payload に `keep_alive: "24h"` 配置。effect 計測は次回セッション
+- #1 [P0] ランクOCR実装 — 2026-06-02 23:30 main へマージ。`facts.rank=3` 実機検証 OK
+- #2 [P0] スタミナOCR実装 — 2026-06-02 23:30 main へマージ。`facts.stamina={current:202,max:101}` 実機検証 OK
