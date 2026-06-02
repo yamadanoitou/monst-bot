@@ -66,6 +66,7 @@ OLLAMA_KEEP_ALIVE = os.environ.get("MONST_OLLAMA_KEEP_ALIVE", "24h")
 DEFAULT_REPEAT = int(os.environ.get("MONST_DIRECTIVE_REPEAT", "3"))
 MAX_DIRECTIVE_CYCLES = int(os.environ.get("MONST_DIRECTIVE_MAX_CYCLES", "50"))
 MAX_WAIT_SEC = int(os.environ.get("MONST_AUTONOMY_MAX_WAIT_SEC", str(bot.STAMINA_WAIT)))
+MAX_RANK_OCR_VALUE = int(os.environ.get("MONST_OCR_MAX_RANK", "999"))
 WELCOME_TARGETS = {"welcome_quest", "current_super_shortcut", "現在ホームのスーパーショートカット先"}
 BASE_SCREEN_SIZE = (bot.SCREEN_W, bot.SCREEN_H)
 
@@ -80,53 +81,54 @@ class OcrRoi:
 
 
 RANK_OCR_ROIS: dict[str, list[OcrRoi]] = {
-    # Pixel 8a 1080x2400. Keep several state-specific candidates because the
-    # header shifts subtly between home, quest entry, and result flows.
+    # Pixel 8a 1080x2400. Avoid Android status bar coordinates; the first
+    # failed review proved the clock is easy for OCR to mistake as rank.
     "home": [
-        OcrRoi("home_header_rank", 120, 38, 410, 105),
-        OcrRoi("home_wide_header_rank", 80, 28, 470, 125),
+        OcrRoi("home_rank_number", 500, 235, 575, 285),
+        OcrRoi("home_rank_circle", 430, 155, 630, 320),
     ],
     "welcome_home": [
-        OcrRoi("welcome_home_header_rank", 120, 38, 410, 105),
-        OcrRoi("welcome_home_wide_header_rank", 80, 28, 470, 125),
+        OcrRoi("welcome_home_rank_number", 500, 235, 575, 285),
+        OcrRoi("welcome_home_rank_circle", 430, 155, 630, 320),
     ],
     "deck": [
-        OcrRoi("deck_header_rank", 120, 38, 410, 105),
-        OcrRoi("deck_wide_header_rank", 80, 28, 470, 125),
+        OcrRoi("deck_rank_number", 500, 235, 575, 285),
+        OcrRoi("deck_rank_circle", 430, 155, 630, 320),
     ],
     "welcome_deck_select": [
-        OcrRoi("welcome_deck_header_rank", 120, 38, 410, 105),
-        OcrRoi("welcome_deck_wide_header_rank", 80, 28, 470, 125),
+        OcrRoi("welcome_deck_rank_number", 500, 235, 575, 285),
+        OcrRoi("welcome_deck_rank_circle", 430, 155, 630, 320),
     ],
     "result": [
-        OcrRoi("result_header_rank", 120, 38, 410, 105),
+        OcrRoi("result_rank_number", 500, 235, 575, 285),
+        OcrRoi("result_rank_circle", 430, 155, 630, 320),
         OcrRoi("result_rank_up_center", 330, 640, 750, 860),
     ],
     "rank_up": [
         OcrRoi("rank_up_center", 330, 640, 750, 860),
-        OcrRoi("rank_up_header_rank", 120, 38, 410, 105),
+        OcrRoi("rank_up_home_circle", 430, 155, 630, 320),
     ],
 }
 DEFAULT_RANK_OCR_ROIS = [
-    OcrRoi("default_header_rank", 120, 38, 410, 105),
-    OcrRoi("default_wide_header_rank", 80, 28, 470, 125),
+    OcrRoi("default_rank_number", 500, 235, 575, 285),
+    OcrRoi("default_rank_circle", 430, 155, 630, 320),
 ]
 STAMINA_FULL_OCR_ROIS: dict[str, list[OcrRoi]] = {
     "home": [
-        OcrRoi("home_header_stamina_full", 360, 36, 770, 112),
-        OcrRoi("home_header_stamina_wide", 300, 28, 840, 128),
+        OcrRoi("home_stamina_full", 120, 180, 370, 245),
+        OcrRoi("home_stamina_wide", 80, 160, 400, 265),
     ],
     "welcome_home": [
-        OcrRoi("welcome_home_header_stamina_full", 360, 36, 770, 112),
-        OcrRoi("welcome_home_header_stamina_wide", 300, 28, 840, 128),
+        OcrRoi("welcome_home_stamina_full", 120, 180, 370, 245),
+        OcrRoi("welcome_home_stamina_wide", 80, 160, 400, 265),
     ],
     "deck": [
-        OcrRoi("deck_header_stamina_full", 360, 36, 770, 112),
-        OcrRoi("deck_header_stamina_wide", 300, 28, 840, 128),
+        OcrRoi("deck_stamina_full", 120, 180, 370, 245),
+        OcrRoi("deck_stamina_wide", 80, 160, 400, 265),
     ],
     "welcome_deck_select": [
-        OcrRoi("welcome_deck_header_stamina_full", 360, 36, 770, 112),
-        OcrRoi("welcome_deck_header_stamina_wide", 300, 28, 840, 128),
+        OcrRoi("welcome_deck_stamina_full", 120, 180, 370, 245),
+        OcrRoi("welcome_deck_stamina_wide", 80, 160, 400, 265),
     ],
     "stamina_out": [
         OcrRoi("stamina_dialog_text", 190, 900, 890, 1280),
@@ -134,30 +136,30 @@ STAMINA_FULL_OCR_ROIS: dict[str, list[OcrRoi]] = {
     ],
 }
 DEFAULT_STAMINA_FULL_OCR_ROIS = [
-    OcrRoi("default_header_stamina_full", 360, 36, 770, 112),
-    OcrRoi("default_header_stamina_wide", 300, 28, 840, 128),
+    OcrRoi("default_stamina_full", 120, 180, 370, 245),
+    OcrRoi("default_stamina_wide", 80, 160, 400, 265),
 ]
 STAMINA_SPLIT_OCR_ROIS: dict[str, tuple[OcrRoi, OcrRoi]] = {
     "home": (
-        OcrRoi("home_stamina_current", 430, 42, 565, 112),
-        OcrRoi("home_stamina_max", 570, 42, 720, 112),
+        OcrRoi("home_stamina_current", 135, 190, 260, 248),
+        OcrRoi("home_stamina_max", 230, 185, 390, 255),
     ),
     "welcome_home": (
-        OcrRoi("welcome_home_stamina_current", 430, 42, 565, 112),
-        OcrRoi("welcome_home_stamina_max", 570, 42, 720, 112),
+        OcrRoi("welcome_home_stamina_current", 135, 190, 260, 248),
+        OcrRoi("welcome_home_stamina_max", 230, 185, 390, 255),
     ),
     "deck": (
-        OcrRoi("deck_stamina_current", 430, 42, 565, 112),
-        OcrRoi("deck_stamina_max", 570, 42, 720, 112),
+        OcrRoi("deck_stamina_current", 135, 190, 260, 248),
+        OcrRoi("deck_stamina_max", 230, 185, 390, 255),
     ),
     "welcome_deck_select": (
-        OcrRoi("welcome_deck_stamina_current", 430, 42, 565, 112),
-        OcrRoi("welcome_deck_stamina_max", 570, 42, 720, 112),
+        OcrRoi("welcome_deck_stamina_current", 135, 190, 260, 248),
+        OcrRoi("welcome_deck_stamina_max", 230, 185, 390, 255),
     ),
 }
 DEFAULT_STAMINA_SPLIT_OCR_ROIS = (
-    OcrRoi("default_stamina_current", 430, 42, 565, 112),
-    OcrRoi("default_stamina_max", 570, 42, 720, 112),
+    OcrRoi("default_stamina_current", 135, 190, 260, 248),
+    OcrRoi("default_stamina_max", 230, 185, 390, 255),
 )
 
 _OCR_ENGINE: Any | None = None
@@ -386,18 +388,32 @@ def _ocr_text_candidates_for_rois(image_path: str | None, rois: list[OcrRoi]) ->
     return detail
 
 
-def _best_digit_ocr_for_rois(image_path: str | None, rois: list[OcrRoi]) -> dict[str, Any]:
+def _best_digit_ocr_for_rois(
+    image_path: str | None,
+    rois: list[OcrRoi],
+    min_value: int | None = None,
+    max_value: int | None = None,
+) -> dict[str, Any]:
     detail = _ocr_text_candidates_for_rois(image_path, rois)
     detail["value"] = None
     if detail["status"] not in {"ok", "no_text"}:
         return detail
     best: dict[str, Any] | None = None
     for candidate in detail["candidates"]:
-        if candidate["digits"] and (best is None or float(candidate["score"]) > float(best["score"])):
+        if not candidate["digits"]:
+            continue
+        value = int(candidate["digits"])
+        if min_value is not None and value < min_value:
+            candidate["rejected_reason"] = f"value_below_{min_value}"
+            continue
+        if max_value is not None and value > max_value:
+            candidate["rejected_reason"] = f"value_above_{max_value}"
+            continue
+        if best is None or float(candidate["score"]) > float(best["score"]):
             best = candidate
 
     if best is None:
-        detail["status"] = "no_digits"
+        detail["status"] = "no_valid_digits" if detail["candidates"] else "no_digits"
         return detail
     detail["status"] = "ok"
     detail["value"] = int(best["digits"])
@@ -496,7 +512,12 @@ def _stamina_ocr(image_path: str | None, screen_state: str | None) -> dict[str, 
 def extract_ocr_facts(observation: dict[str, Any], screen_state: str | None) -> dict[str, Any]:
     current = observation.get("current_screen", {})
     image_path = current.get("image_path")
-    rank_detail = _best_digit_ocr_for_rois(image_path, _rank_rois_for_state(screen_state))
+    rank_detail = _best_digit_ocr_for_rois(
+        image_path,
+        _rank_rois_for_state(screen_state),
+        min_value=1,
+        max_value=MAX_RANK_OCR_VALUE,
+    )
     stamina_detail = _stamina_ocr(image_path, screen_state)
     return {
         "rank": rank_detail.get("value"),

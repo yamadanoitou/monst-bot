@@ -33,17 +33,17 @@
 - owner: codex
 - status: review
 - accept: `monst_autonomous_agent.observe()` が返す `facts.rank` に現在ランクが整数で入る。`screens/` の rank 表示ROIを最低3パターン（home / quest start / result）で検証
-- blocked_by: なし（#3 完了。RapidOCR で進める）
-- branch: `feat/ocr-rank`
-- notes: Codex が 2026-06-02 22:35 に実装完了。RapidOCR は `rapidocr-onnxruntime` として導入。home / deck(quest start相当) / result / rank_up のROI候補を実装し、dry-run と fake OCR で検証。実機スクショ3パターン検証は未実施
+- blocked_by: なし
+- branch: `feat/ocr-rank` （実装済み、ROI 修正のため再 push 必要）
+- notes: Codex が 2026-06-02 23:12 にROI再調整完了。Android ステータスバー時計を避け、home rank は中央ランク円 `x=430-630,y=155-320` / 数字 `x=500-575,y=235-285` を読む。`MONST_OCR_MAX_RANK=999` で時計などの大きすぎる誤値を拒否。実機 observe で `facts.rank == 3` を確認。手元素材は home のみで、quest start / result の追加実画像検証は未実施
 
 ### #2 [P0] スタミナOCR実装
 - owner: codex
 - status: review
 - accept: `facts.stamina.current` と `facts.stamina.max` に整数。`stamina_full` 検出より優先して読み取る
-- blocked_by: なし（#3 完了。RapidOCR で進める）
-- branch: `feat/ocr-stamina`
-- notes: Codex が 2026-06-02 22:38 に実装完了。full ROI の `45/120` パース + current/max 左右分割 fallback を実装。dry-run と fake OCR で検証。実機スクショでのROI微調整は未実施
+- blocked_by: なし
+- branch: `feat/ocr-stamina` （実装済み、ROI 修正のため再 push 必要）
+- notes: Codex が 2026-06-02 23:12 にROI再調整完了。home stamina は左上オレンジカプセル `x=80-400,y=160-265` / tight `x=120-370,y=180-245` を読む。実機 observe で `facts.stamina = {current: 202, max: 101}` を確認。split fallback も左上カプセルに合わせて更新。手元素材は home のみで、stamina_out 実画像検証は未実施
 
 ### #3 [P0] OCRライブラリ比較リサーチ
 - owner: gemini
@@ -53,13 +53,13 @@
 - branch: `research/ocr-libs`
 - notes: **結論: RapidOCR (onnx) 推奨**。CPU 150ms 前後、`pip install rapidocr_onnxruntime` のみ、メモリ ~150MB。Tesseract は軽量だが装飾フォントに弱く前処理必須、PaddleOCR は精度最高だが Windows で重い、EasyOCR は CPU で遅すぎる。詳細は research ファイル参照。#1 #2 (OCR 実装) はこれを受けて RapidOCR で進められる
 
-### #4 [P1] Ollama keep_alive 永続化 ⭐ Codex 次の推奨タスク
+### #4 [P1] Ollama keep_alive 永続化
 - owner: codex
-- status: review
-- accept: `monst_autonomous_agent.py` の Ollama 呼び出しで `keep_alive: "24h"` 相当を設定。モデルが Vram に常駐し、戦略ティックの初回レイテンシが2回目以降と同等になる
+- status: done
+- accept: ✅ `_call_local_llm()` payload に `keep_alive: "24h"` 配置確認・main へマージ済み
 - blocked_by: なし
-- branch: `feat/ollama-keep-alive`
-- notes: Codex が 2026-06-02 22:30 に実装完了。`MONST_OLLAMA_KEEP_ALIVE` 既定値 `24h` を Ollama payload に設定。effect は別途計測
+- branch: `feat/ollama-keep-alive` （main にマージ済み 2026-06-02 23:20）
+- notes: 2026-06-02 23:20 main マージ完了。effect 計測（戦略ティック2回目以降のレイテンシ低下）は次のセッションで確認
 
 ### #5 [P1] 戦略ティック頻度設計
 - owner: claude
@@ -117,6 +117,14 @@
 - branch: `docs/policy-vs-journal`
 - notes: 真実源が分散しはじめている問題への対処
 
+### #12 [P2] 自動録画パイプライン ⭐ Codex 次の独立タスク
+- owner: codex
+- status: open
+- accept: `monst_autonomous_agent.py` のセッション開始時に scrcpy をサブプロセスで起動し、Pixel 8a の画面を 1 時間ごとローテーションで mp4 録画する。出力先は環境変数 `MONST_RECORDINGS_DIR`（既定 `./recordings`）、保持日数は `MONST_RECORDINGS_RETENTION_DAYS`（既定 7 日）で指定。bot 停止時に scrcpy も停止する
+- blocked_by: なし
+- branch: `feat/auto-recording`
+- notes: scrcpy 前提（`scoop install scrcpy` などで導入。未インストール時は起動時に警告だけ出して bot 本体は継続）。`recordings/` は重いので `.gitignore` に追加。ファイル名は `YYYY-MM-DD/HH-MM.mp4`。**録画失敗で bot 本体を落とさないこと**（録画は付帯機能）
+
 ---
 
 ## IN_PROGRESS
@@ -140,3 +148,4 @@
 ## DONE
 
 - #3 [P0] OCRライブラリ比較リサーチ — 2026-06-02 完了。`research/2026-06_ocr_jp_digits_benchmark.md`。**結論: RapidOCR (onnx) 採用**。#1 #2 のブロッカー解除済み
+- #4 [P1] Ollama keep_alive 永続化 — 2026-06-02 23:20 main へマージ。`_call_local_llm()` の payload に `keep_alive: "24h"` 配置。effect 計測は次回セッション
